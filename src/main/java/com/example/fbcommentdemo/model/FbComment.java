@@ -6,10 +6,10 @@ import java.util.List;
 
 public @Data class FbComment {
     private String postId;
-    private List<String> comments;
+    private List<CommentDetail> commentDetails;
 
-    public FbComment(String postId, List<String> comments) {
+    public FbComment(String postId, List<CommentDetail> commentDetails) {
         this.postId=postId;
-        this.comments=comments;
+        this.commentDetails=commentDetails;
     }
 }

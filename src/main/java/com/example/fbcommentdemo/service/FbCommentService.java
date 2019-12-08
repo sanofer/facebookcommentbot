@@ -1,5 +1,6 @@
 package com.example.fbcommentdemo.service;
 
+import com.example.fbcommentdemo.model.CommentDetail;
 import com.example.fbcommentdemo.model.CommentTime;
 import com.example.fbcommentdemo.model.FbComment;
 import com.example.fbcommentdemo.repository.CommentTimeRepository;
@@ -27,7 +28,7 @@ public class FbCommentService {
         Connection<Post> pagePosts = facebookClient.fetchConnection("me/feed", Post.class);
         for (List<Post> posts : pagePosts)
             for (Post post : posts) {
-                List<String> comments = getComment(facebookClient, post.getId(), from);
+                List<CommentDetail> comments = getComment(facebookClient, post.getId(), from);
                 fbComment.add(new FbComment(post.getId(), comments));
                 if (comments.size() > 0) {
                     commentsCounter++;
@@ -41,8 +42,8 @@ public class FbCommentService {
         return fbComment;
     }
 
-    public List<String> getComment(FacebookClient client, String post_id, String from) {
-        List<String> comments = new ArrayList<String>();
+    public List<CommentDetail> getComment(FacebookClient client, String post_id, String from) {
+        List<CommentDetail> commentsDetails = new ArrayList<CommentDetail>();
 
         Connection<Comment> allComments = client.fetchConnection(post_id + "/comments", Comment.class);
         for (List<Comment> postcomments : allComments) {
@@ -50,17 +51,20 @@ public class FbCommentService {
                 Date lastFetchedDate = commentTimeRepository.findFirstByOrderByIdDesc().getCommentFetchedDate();
                 for (Comment comment : postcomments) {
                     if (comment.getCreatedTime().after(lastFetchedDate)) {
-                        comments.add(comment.getMessage());
+                        CommentDetail commentDetail = new CommentDetail(comment.getFrom().getName(),comment.getMessage());
+                        commentsDetails.add(commentDetail);
+
                     }
-                    return comments;
+                    return commentsDetails;
                 }
             }
 
             for (Comment comment : postcomments) {
-                comments.add(comment.getMessage());
+                CommentDetail commentDetail = new CommentDetail(comment.getFrom().getName(),comment.getMessage());
+                commentsDetails.add(commentDetail);
             }
         }
-        return comments;
+        return commentsDetails;
     }
 
 }
