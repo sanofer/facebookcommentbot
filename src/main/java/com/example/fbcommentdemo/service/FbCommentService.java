@@ -44,26 +44,27 @@ public class FbCommentService {
 
     public List<CommentDetail> getComment(FacebookClient client, String post_id, String from) {
         List<CommentDetail> commentsDetails = new ArrayList<CommentDetail>();
-
+        Date lastFetchedDate = commentTimeRepository.findFirstByOrderByIdDesc().getCommentFetchedDate();
         Connection<Comment> allComments = client.fetchConnection(post_id + "/comments", Comment.class);
-        for (List<Comment> postcomments : allComments) {
-            if (from.equals(LATEST_COMMENTS)) {
-                Date lastFetchedDate = commentTimeRepository.findFirstByOrderByIdDesc().getCommentFetchedDate();
-                for (Comment comment : postcomments) {
+        if (from.equals(LATEST_COMMENTS)) {
+            for (List<Comment> postComment : allComments) {
+                for (Comment comment : postComment) {
                     if (comment.getCreatedTime().after(lastFetchedDate)) {
-                        CommentDetail commentDetail = new CommentDetail(comment.getFrom().getName(),comment.getMessage());
+                        CommentDetail commentDetail = new CommentDetail(comment.getFrom().getName(), comment.getMessage());
                         commentsDetails.add(commentDetail);
 
                     }
-                    return commentsDetails;
                 }
+                return commentsDetails;
             }
-
-            for (Comment comment : postcomments) {
-                CommentDetail commentDetail = new CommentDetail(comment.getFrom().getName(),comment.getMessage());
+        }
+        for (List<Comment> postComment : allComments) {
+            for (Comment comment : postComment) {
+                CommentDetail commentDetail = new CommentDetail(comment.getFrom().getName(), comment.getMessage());
                 commentsDetails.add(commentDetail);
             }
         }
+
         return commentsDetails;
     }
 
