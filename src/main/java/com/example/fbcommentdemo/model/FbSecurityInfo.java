@@ -8,7 +8,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public @Data class FbSecurityInfo {
+public @Data
+class FbSecurityInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

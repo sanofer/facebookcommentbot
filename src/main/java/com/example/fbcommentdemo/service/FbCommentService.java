@@ -21,6 +21,11 @@ public class FbCommentService {
     @Autowired
     private CommentTimeRepository commentTimeRepository;
 
+    /**
+     * This method is used to fetch all comments for various posts in a given page
+     *
+     * @return List<FbComment>
+     */
     public List<FbComment> getCommentsForPosts(FacebookClient facebookClient, String from) {
         List<FbComment> fbComment = new ArrayList<>();
         List<CommentDetail> comments;
@@ -29,11 +34,11 @@ public class FbCommentService {
         for (List<Post> posts : pagePosts)
             for (Post post : posts) {
                 if (from.equals(LATEST_COMMENTS)) {
-                    comments = getLatestComment(facebookClient, post.getId());
+                    comments = getLatestComments(facebookClient, post.getId());
                 } else {
-                    comments = getAllComment(facebookClient, post.getId());
+                    comments = getComments(facebookClient, post.getId());
                 }
-                fbComment.add(new FbComment(post.getId(), comments));
+                fbComment.add(new FbComment(post.getId(), post.getMessage(), comments));
                 if (comments.size() > 0) {
                     commentsCounter++;
                 }
@@ -46,7 +51,12 @@ public class FbCommentService {
         return fbComment;
     }
 
-    public List<CommentDetail> getLatestComment(FacebookClient client, String post_id) {
+    /**
+     * This method is used to fetch latest comments on the page, since the last fetch
+     *
+     * @return List<CommentDetail>
+     */
+    public List<CommentDetail> getLatestComments(FacebookClient client, String post_id) {
         List<CommentDetail> commentsDetails = new ArrayList<CommentDetail>();
         CommentDetail commentDetail = null;
         Date lastFetchedDate = commentTimeRepository.findFirstByOrderByIdDesc().getCommentFetchedDate();
@@ -63,7 +73,12 @@ public class FbCommentService {
         return commentsDetails;
     }
 
-    public List<CommentDetail> getAllComment(FacebookClient client, String post_id) {
+    /**
+     * This method is used to fetch all comments on the page
+     *
+     * @return List<CommentDetail>
+     */
+    public List<CommentDetail> getComments(FacebookClient client, String post_id) {
         List<CommentDetail> commentsDetails = new ArrayList<CommentDetail>();
         CommentDetail commentDetail = null;
         Connection<Comment> allComments = client.fetchConnection(post_id + "/comments", Comment.class);
@@ -76,6 +91,11 @@ public class FbCommentService {
         return commentsDetails;
     }
 
+    /**
+     * This method is used to fetch a comment with all the replies
+     *
+     * @return CommentDetail
+     */
     private CommentDetail buildComments(FacebookClient client, Comment comment) {
         CommentDetail commentDetail = new CommentDetail(comment.getFrom().getName(), comment.getMessage());
         List<String> replies = new ArrayList<>();
